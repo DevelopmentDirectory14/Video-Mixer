@@ -40,7 +40,10 @@ class MergeVideoViewController: UIViewController {
   }
   
   @IBAction func loadAudio(_ sender: AnyObject) {
-    
+    let mediaPickerController = MPMediaPickerController(mediaTypes: .any)
+    mediaPickerController.delegate = self
+    mediaPickerController.prompt = "Select Audio"
+    present(mediaPickerController, animated: true, completion: nil)
   }
     
   @IBAction func merge(_ sender: AnyObject) {
@@ -79,5 +82,13 @@ extension MergeVideoViewController: UINavigationControllerDelegate {
 }
 
 extension MergeVideoViewController: MPMediaPickerControllerDelegate {
-  
+  func mediaPicker(_ mediaPicker: MPMediaPickerController, didPickMediaItems mediaItemCollection: MPMediaItemCollection) {
+    dismiss(animated: true) {
+      let selectedSongs = mediaItemCollection.items
+      guard let song = selectedSongs.first else { return }
+      
+      let url = song.value(forProperty: MPMediaItemPropertyAssetURL) as? URL
+      self.audioAsset = (url == nil) ? nil : AVAsset(url: url!)
+    }
+  }
 }
