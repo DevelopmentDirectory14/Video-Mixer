@@ -89,6 +89,16 @@ extension MergeVideoViewController: MPMediaPickerControllerDelegate {
       
       let url = song.value(forProperty: MPMediaItemPropertyAssetURL) as? URL
       self.audioAsset = (url == nil) ? nil : AVAsset(url: url!)
+      let title = (url == nil) ? "Asset Not Available" : "Asset loaded"
+      let message = (url == nil) ? "Audio Not Available" : "Audio loaded"
+      
+      let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+      alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+      self.present(alert, animated: true, completion: nil)
     }
+  }
+  
+  func mediaPickerDidCancel(_ mediaPicker: MPMediaPickerController) {
+    dismiss(animated: true, completion: nil)
   }
 }
