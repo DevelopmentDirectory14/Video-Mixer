@@ -16,6 +16,30 @@ class PlayVideoViewController: UIViewController {
 
 // MARK: - UIImagePickerControllerDelegate
 extension PlayVideoViewController: UIImagePickerControllerDelegate {
+  
+  func imagePickerController(_ _picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String: Any]) {
+    //1
+    guard
+      let mediaType = info[UIImagePickerControllerMediaType] as? String,
+      mediaType == (kUTTypeMovie as? String),
+      let url = info[UIImagePickerControllerMediaURL] as? URL
+      
+      else {
+        print("Failed to load mediaType & URL")
+        return
+      }
+    
+      print("Successfully loaded mediaType & url")
+    //2
+    dismiss(animated: true) {
+      //3
+      let player = AVPlayer(url: url)
+      let vcPlayer = AVPlayerViewController()
+      vcPlayer.player = player
+      self.present(vcPlayer, animated: true, completion: nil)
+    }
+  }
+  
 }
 
 // MARK: - UINavigationControllerDelegate
