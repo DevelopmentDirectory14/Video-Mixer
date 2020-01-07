@@ -11,7 +11,7 @@
         <!--Home View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="HomeViewController" customModule="RWVideoNinja" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="HomeViewController" customModule="VideoMixer" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
@@ -67,7 +67,7 @@
         <!--Play Video View Controller-->
         <scene sceneID="YQK-8G-n1b">
             <objects>
-                <viewController id="KbI-wn-Irm" customClass="PlayVideoViewController" customModule="RWVideoNinja" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="KbI-wn-Irm" customClass="PlayVideoViewController" customModule="VideoMixer" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="dEu-tx-DKc"/>
                         <viewControllerLayoutGuide type="bottom" id="b0R-qi-G8z"/>
@@ -100,7 +100,7 @@
         <!--Record Video View Controller-->
         <scene sceneID="rVf-Rl-9jx">
             <objects>
-                <viewController id="7Bs-0P-9vZ" customClass="RecordVideoViewController" customModule="RWVideoNinja" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="7Bs-0P-9vZ" customClass="RecordVideoViewController" customModule="VideoMixer" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="vY0-s2-1uJ"/>
                         <viewControllerLayoutGuide type="bottom" id="c5B-6d-pFy"/>
@@ -133,7 +133,7 @@
         <!--Merge Video View Controller-->
         <scene sceneID="AH5-cj-azu">
             <objects>
-                <viewController id="PVi-BS-fPG" customClass="MergeVideoViewController" customModule="RWVideoNinja" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="PVi-BS-fPG" customClass="MergeVideoViewController" customModule="VideoMixer" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="025-RQ-g8l"/>
                         <viewControllerLayoutGuide type="bottom" id="5PE-qP-e9S"/>

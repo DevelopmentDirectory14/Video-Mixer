@@ -21,15 +21,15 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppleMusicUsageDescription</key>
-	<string>RWVideoNinja would like to access to your Media Library.</string>
+	<string>VideoMixer would like to access to your Media Library.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>RWVideoNinja would like to use your camera.</string>
+	<string>VideoMixer would like to use your camera.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>RWVideoNinja would like to access your microphone.</string>
+	<string>VideoMixer would like to access your microphone.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>RWVideoNinja would like to save to your Photo Library.</string>
+	<string>VideoMixer would like to save to your Photo Library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>RWVideoNinja would like to access to your Photo Library.</string>
+	<string>VideoMixer would like to access to your Photo Library.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
