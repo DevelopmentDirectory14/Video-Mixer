@@ -20,7 +20,7 @@ class MergeVideoViewController: UIViewController {
     guard !UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum) else { return true }
     
     let alert = UIAlertController(title: "Not Available", message: "No Saved Album found", preferredStyle: .alert)
-    alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.cancel, handler: nil))
+    alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.cancel, handler: nil))
     present(alert, animated: true, completion: nil)
     return false
   }
@@ -33,7 +33,7 @@ class MergeVideoViewController: UIViewController {
     secondAsset = nil
     audioAsset = nil
     
-    guard session.status == AVAssetExportSessionStatus.completed,
+    guard session.status == AVAssetExportSession.Status.completed,
     let outputURL = session.outputURL else { return }
     
     let saveVideoToPhotos = {
@@ -44,7 +44,7 @@ class MergeVideoViewController: UIViewController {
         
         DispatchQueue.main.async {
           let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-          alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.cancel, handler: nil))
+          alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.cancel, handler: nil))
         
         
           self.present(alert, animated: true, completion: nil)
@@ -97,9 +97,9 @@ class MergeVideoViewController: UIViewController {
     guard let firstTrack = mixComposition.addMutableTrack(withMediaType: .video,
                                                           preferredTrackID: Int32(kCMPersistentTrackID_Invalid)) else { return }
     do {
-      try firstTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, firstAsset.duration),
+      try firstTrack.insertTimeRange(CMTimeRangeMake(start: CMTime.zero, duration: firstAsset.duration),
                                      of: firstAsset.tracks(withMediaType: .video)[0],
-                                     at: kCMTimeZero)
+                                     at: CMTime.zero)
     } catch {
       print("Failed to load first track")
       return
@@ -108,7 +108,7 @@ class MergeVideoViewController: UIViewController {
     guard let secondTrack = mixComposition.addMutableTrack(withMediaType: .video,
                                                            preferredTrackID: Int32(kCMPersistentTrackID_Invalid)) else { return }
     do {
-      try secondTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, secondAsset.duration),
+      try secondTrack.insertTimeRange(CMTimeRangeMake(start: CMTime.zero, duration: secondAsset.duration),
                                       of: secondAsset.tracks(withMediaType: .video)[0],
                                       at: firstAsset.duration)
     } catch {
@@ -136,9 +136,9 @@ class MergeVideoViewController: UIViewController {
     if let loadedAudioAsset = audioAsset {
       let audioTrack = mixComposition.addMutableTrack(withMediaType: .audio, preferredTrackID: 0)
       do {
-        try audioTrack?.insertTimeRange(CMTimeRangeMake(kCMTimeZero, CMTimeAdd(firstAsset.duration, secondAsset.duration)),
+        try audioTrack?.insertTimeRange(CMTimeRangeMake(start: CMTime.zero, duration: CMTimeAdd(firstAsset.duration, secondAsset.duration)),
                                         of: loadedAudioAsset.tracks(withMediaType: .audio)[0] ,
-                                        at: kCMTimeZero)
+                                        at: CMTime.zero)
       } catch {
         print("Failed to load Audio track")
       }
@@ -170,12 +170,15 @@ class MergeVideoViewController: UIViewController {
 }
 
 extension MergeVideoViewController: UIImagePickerControllerDelegate {
-  func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+  func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+// Local variable inserted by Swift 4.2 migrator.
+let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
+
     dismiss(animated: true, completion: nil)
     
-    guard let mediaType = info[UIImagePickerControllerMediaType] as? String,
+    guard let mediaType = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.mediaType)] as? String,
       mediaType == (kUTTypeMovie as String),
-      let url = info[UIImagePickerControllerMediaURL] as? URL
+      let url = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.mediaURL)] as? URL
       else { return }
     
     let avAsset = AVAsset(url: url)
@@ -188,7 +191,7 @@ extension MergeVideoViewController: UIImagePickerControllerDelegate {
       secondAsset = avAsset
     }
     let alert = UIAlertController(title: "Asset Loaded", message: message, preferredStyle: .alert)
-    alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.cancel, handler: nil))
+    alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.cancel, handler: nil))
     present(alert, animated: true, completion: nil)
   }
   
@@ -219,4 +222,14 @@ extension MergeVideoViewController: MPMediaPickerControllerDelegate {
   func mediaPickerDidCancel(_ mediaPicker: MPMediaPickerController) {
     dismiss(animated: true, completion: nil)
   }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
+	return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+	return input.rawValue
 }

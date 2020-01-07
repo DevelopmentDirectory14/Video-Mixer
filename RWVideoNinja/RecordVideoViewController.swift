@@ -18,7 +18,7 @@ class RecordVideoViewController: UIViewController {
     let message = (error == nil) ? "Video was saved" : "Video failed to save"
     
     let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-    alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.cancel, handler: nil))
+    alert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.cancel, handler: nil))
     present(alert, animated: true, completion: nil)
   }
   
@@ -27,13 +27,16 @@ class RecordVideoViewController: UIViewController {
 
 extension RecordVideoViewController: UIImagePickerControllerDelegate {
   
-  func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+  func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+// Local variable inserted by Swift 4.2 migrator.
+let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
+
     dismiss(animated: true, completion: nil)
     
     guard
-      let mediaType = info[UIImagePickerControllerMediaType] as? String,
+      let mediaType = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.mediaType)] as? String,
       mediaType == (kUTTypeMovie as? String),
-      let url = info[UIImagePickerControllerMediaURL] as? URL,
+      let url = info[convertFromUIImagePickerControllerInfoKey(UIImagePickerController.InfoKey.mediaURL)] as? URL,
       UIVideoAtPathIsCompatibleWithSavedPhotosAlbum(url.path)
       else {
         print("Failed to identify image mediaType & url")
@@ -52,4 +55,14 @@ extension RecordVideoViewController: UIImagePickerControllerDelegate {
 
 extension RecordVideoViewController: UINavigationControllerDelegate {
   
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
+	return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromUIImagePickerControllerInfoKey(_ input: UIImagePickerController.InfoKey) -> String {
+	return input.rawValue
 }
