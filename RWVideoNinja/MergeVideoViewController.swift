@@ -115,23 +115,24 @@ class MergeVideoViewController: UIViewController {
       print("Failed to load second track")
       return
     }
-  /*
+
     // 2.1
     let mainInstruction = AVMutableVideoCompositionInstruction()
-    mainInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, CMTimeAdd(firstAsset.duration, secondAsset.duration))
+    mainInstruction.timeRange = CMTimeRangeMake(start: CMTime.zero, duration: CMTimeAdd(firstAsset.duration, secondAsset.duration))
     
     // 2.2
     let firstInstruction = VideoHelper.videoCompositionInstruction(firstTrack, asset: firstAsset)
     firstInstruction.setOpacity(0.0, at: firstAsset.duration)
     let secondInstruction = VideoHelper.videoCompositionInstruction(secondTrack, asset: secondAsset)
     
-    // 2.3
+    //2.3
     mainInstruction.layerInstructions = [firstInstruction, secondInstruction]
     let mainComposition = AVMutableVideoComposition()
     mainComposition.instructions = [mainInstruction]
-    mainComposition.frameDuration = CMTimeMake(1, 30)
+    mainComposition.frameDuration = CMTimeMake(value: 1, timescale: 30)
     mainComposition.renderSize = CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
- */
+    
+    
     // 3 - Audio track
     if let loadedAudioAsset = audioAsset {
       let audioTrack = mixComposition.addMutableTrack(withMediaType: .audio, preferredTrackID: 0)
@@ -157,7 +158,7 @@ class MergeVideoViewController: UIViewController {
     exporter.outputURL = url
     exporter.outputFileType = AVFileType.mov
     exporter.shouldOptimizeForNetworkUse = true
-    //exporter.videoComposition = mainComposition
+    exporter.videoComposition = mainComposition
     
     // 6 - Perform the Export
     exporter.exportAsynchronously() {
