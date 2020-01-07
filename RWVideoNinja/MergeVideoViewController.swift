@@ -24,48 +24,46 @@ class MergeVideoViewController: UIViewController {
     present(alert, animated: true, completion: nil)
     return false
   }
-  
-    func exportDidFinish(_ session: AVAssetExportSession) {
-      //Cleanup assets
-      activityMonitor.stopAnimating()
-      firstAsset = nil
-      secondAsset = nil
-      audioAsset = nil
-      
-      guard
-          session.status == AVAssetExportSessionStatus.completed,
-          let outputURL = session.outputURL
-          else { return }
-      
-      let saveVideoToPhotos =  {
-          PHPhotoLibrary.shared().performChanges({
-              PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: outputURL)
-          }) { saved, error in
-              let success = saved && (error == nil)
-              let title = success ? "Success" : "Error"
-              let message = success ? "Video saved" : "Failed to save video"
-              
-            DispatchQueue.main.async {
-              let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-              alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.cancel, handler: nil))
-              self.present(alert, animated: true, completion: nil)
-            }
-          }
-      }
-      
-      //Ensure permission to access photo library
-      if PHPhotoLibrary.authorizationStatus() != .authorized {
-          PHPhotoLibrary.requestAuthorization({ status in
-              if status == .authorized {
-                  saveVideoToPhotos()
-              }
-          })
-      } else {
-          saveVideoToPhotos()
+    
+  func exportDidFinish(_ session: AVAssetExportSession) {
+    
+    // Cleanup assets
+    activityMonitor.stopAnimating()
+    firstAsset = nil
+    secondAsset = nil
+    audioAsset = nil
+    
+    guard session.status == AVAssetExportSessionStatus.completed,
+    let outputURL = session.outputURL else { return }
+    
+    let saveVideoToPhotos = {
+      PHPhotoLibrary.shared().performChanges({ PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: outputURL) }) { saved, error in
+        let success = saved && (error == nil)
+        let title = success ? "Success" : "Error"
+        let message = success ? "Video saved" : "Failed to save video"
+        
+        DispatchQueue.main.async {
+          let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+          alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.cancel, handler: nil))
+        
+        
+          self.present(alert, animated: true, completion: nil)
+        }
       }
     }
     
-    
+    // Ensure permission to access Photo Library
+    if PHPhotoLibrary.authorizationStatus() != .authorized {
+      PHPhotoLibrary.requestAuthorization({ status in
+        if status == .authorized {
+          saveVideoToPhotos()
+        }
+      })
+    } else {
+      saveVideoToPhotos()
+    }
+  }
+  
   @IBAction func loadAssetOne(_ sender: AnyObject) {
     if savedPhotosAvailable() {
       loadingAssetOne = true
@@ -88,63 +86,66 @@ class MergeVideoViewController: UIViewController {
   }
     
   @IBAction func merge(_ sender: AnyObject) {
-    guard
-        let firstAsset = firstAsset,
-        let secondAsset = secondAsset
-        else { return }
+    guard let firstAsset = firstAsset, let secondAsset = secondAsset else { return }
     
     activityMonitor.startAnimating()
     
-    //1 - Create AVMutableComposition object.  This object will hold your AVMutableCompositionTrack instances.
+    // 1 - Create AVMutableComposition object. This object will hold your AVMutableCompositionTrack instances.
     let mixComposition = AVMutableComposition()
     
-    //2 - Create two video tracks.
-    guard
-        let firstTrack = mixComposition.addMutableTrack(withMediaType: .video, preferredTrackID:
-    Int32(kCMPersistentTrackID_Invalid))
-        else { return }
-    
+    // 2 - Create two video tracks
+    guard let firstTrack = mixComposition.addMutableTrack(withMediaType: .video,
+                                                          preferredTrackID: Int32(kCMPersistentTrackID_Invalid)) else { return }
     do {
-        try firstTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, firstAsset.duration),
-                                        of: firstAsset.tracks(withMediaType:
-                                            .video)[0],
-                                        at: kCMTimeZero)
+      try firstTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, firstAsset.duration),
+                                     of: firstAsset.tracks(withMediaType: .video)[0],
+                                     at: kCMTimeZero)
     } catch {
-        print("Failed to load first track")
-        return
+      print("Failed to load first track")
+      return
     }
     
-    guard
-        let secondTrack = mixComposition.addMutableTrack(withMediaType: .video, preferredTrackID:
-    Int32(kCMPersistentTrackID_Invalid))
-        else { return }
-    
+    guard let secondTrack = mixComposition.addMutableTrack(withMediaType: .video,
+                                                           preferredTrackID: Int32(kCMPersistentTrackID_Invalid)) else { return }
     do {
-        try secondTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, secondAsset.duration),
-                                        of: secondAsset.tracks(withMediaType:
-                                            .video)[0],
-                                        at: firstAsset.duration)
+      try secondTrack.insertTimeRange(CMTimeRangeMake(kCMTimeZero, secondAsset.duration),
+                                      of: secondAsset.tracks(withMediaType: .video)[0],
+                                      at: firstAsset.duration)
     } catch {
-        print("Failed to load second track")
-        return
+      print("Failed to load second track")
+      return
     }
+  /*
+    // 2.1
+    let mainInstruction = AVMutableVideoCompositionInstruction()
+    mainInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, CMTimeAdd(firstAsset.duration, secondAsset.duration))
     
+    // 2.2
+    let firstInstruction = VideoHelper.videoCompositionInstruction(firstTrack, asset: firstAsset)
+    firstInstruction.setOpacity(0.0, at: firstAsset.duration)
+    let secondInstruction = VideoHelper.videoCompositionInstruction(secondTrack, asset: secondAsset)
+    
+    // 2.3
+    mainInstruction.layerInstructions = [firstInstruction, secondInstruction]
+    let mainComposition = AVMutableVideoComposition()
+    mainComposition.instructions = [mainInstruction]
+    mainComposition.frameDuration = CMTimeMake(1, 30)
+    mainComposition.renderSize = CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+ */
     // 3 - Audio track
     if let loadedAudioAsset = audioAsset {
-        let audioTrack = mixComposition.addMutableTrack(withMediaType: .audio, preferredTrackID: 0)
-        do {
-            try audioTrack?.insertTimeRange(CMTimeRangeMake(kCMTimeZero, CMTimeAdd(firstAsset.duration, secondAsset.duration)),
-                                            of: loadedAudioAsset.tracks(withMediaType: .audio)[0],
-                                            at: kCMTimeZero)
-        } catch {
-            print("Failed to load Audio track")
-        }
+      let audioTrack = mixComposition.addMutableTrack(withMediaType: .audio, preferredTrackID: 0)
+      do {
+        try audioTrack?.insertTimeRange(CMTimeRangeMake(kCMTimeZero, CMTimeAdd(firstAsset.duration, secondAsset.duration)),
+                                        of: loadedAudioAsset.tracks(withMediaType: .audio)[0] ,
+                                        at: kCMTimeZero)
+      } catch {
+        print("Failed to load Audio track")
+      }
     }
     
-    // 4 - Get Path
-    guard let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        else { return }
-    
+    // 4 - Get path
+    guard let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
     let dateFormatter = DateFormatter()
     dateFormatter.dateStyle = .long
     dateFormatter.timeStyle = .short
@@ -152,21 +153,20 @@ class MergeVideoViewController: UIViewController {
     let url = documentDirectory.appendingPathComponent("mergeVideo-\(date).mov")
     
     // 5 - Create Exporter
-    guard let exporter = AVAssetExportSession(asset: mixComposition, presetName:
-        AVAssetExportPresetHighestQuality) else { return }
-    
+    guard let exporter = AVAssetExportSession(asset: mixComposition, presetName: AVAssetExportPresetHighestQuality) else { return }
     exporter.outputURL = url
     exporter.outputFileType = AVFileType.mov
     exporter.shouldOptimizeForNetworkUse = true
+    //exporter.videoComposition = mainComposition
     
     // 6 - Perform the Export
     exporter.exportAsynchronously() {
-        DispatchQueue.main.async {
-            self.exportDidFinish(exporter)
-        }
+      DispatchQueue.main.async {
+        self.exportDidFinish(exporter)
+      }
     }
-    
   }
+  
 }
 
 extension MergeVideoViewController: UIImagePickerControllerDelegate {
@@ -200,17 +200,18 @@ extension MergeVideoViewController: UINavigationControllerDelegate {
 
 extension MergeVideoViewController: MPMediaPickerControllerDelegate {
   func mediaPicker(_ mediaPicker: MPMediaPickerController, didPickMediaItems mediaItemCollection: MPMediaItemCollection) {
+    
     dismiss(animated: true) {
       let selectedSongs = mediaItemCollection.items
       guard let song = selectedSongs.first else { return }
       
       let url = song.value(forProperty: MPMediaItemPropertyAssetURL) as? URL
       self.audioAsset = (url == nil) ? nil : AVAsset(url: url!)
-      let title = (url == nil) ? "Asset Not Available" : "Asset loaded"
-      let message = (url == nil) ? "Audio Not Available" : "Audio loaded"
+      let title = (url == nil) ? "Asset Not Available" : "Asset Loaded"
+      let message = (url == nil) ? "Audio Not Loaded" : "Audio Loaded"
       
       let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-      alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+      alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler:nil))
       self.present(alert, animated: true, completion: nil)
     }
   }
