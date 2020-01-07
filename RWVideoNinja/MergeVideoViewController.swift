@@ -50,6 +50,46 @@ class MergeVideoViewController: UIViewController {
     
   }
   
+  func exportDidFinish(_ session: AVAssetExportSession) {
+    //Cleanup assets
+    activityMonitor.stopAnimating()
+    firstAsset = nil
+    secondAsset = nil
+    audioAsset = nil
+    
+    guard
+        session.status == AVAssetExportSessionStatus.completed,
+        let outputURL = session.outputURL
+        else { return }
+    
+    let saveVideoToPhotos =  {
+        PHPhotoLibrary.shared().performChanges({
+            PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: outputURL)
+        }) { saved, error in
+            let success = saved && (error == nil)
+            let title = success ? "Success" : "Error"
+            let message = success ? "Video saved" : "Failed to save video"
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.cancel, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    //Ensure permission to access photo library
+    if PHPhotoLibrary.authorizationStatus() != .authorized {
+        PHPhotoLibrary.requestAuthorization { status in
+            if status == .authorized {
+                saveVideoToPhotos()
+            }
+        }
+    } else {
+        saveVideoToPhotos()
+    }
+  }
+    
+  
+    
 }
 
 extension MergeVideoViewController: UIImagePickerControllerDelegate {
